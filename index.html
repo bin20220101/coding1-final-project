@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>window.onerror = function(error, url, line) {parent.postMessage(["console", "❌ -- [ERROR] -- ❌ -- ⚠️ " + error], "*")};var cl = console.log;console.log = function () {var msg = [...arguments].join();parent.postMessage(["console", msg], "*");  }  </script><script src = "https://mimicproject.com/libs/maximilian.js">
+</script>
+    <script crossorigin src = "https://rawgit.com/nexus-js/ui/master/dist/NexusUI.js">
+</script>
+
+  <style>
+    body{
+background-color: #08AEEA;
+background-image: linear-gradient(0deg, #08AEEA 0%, #2AF598 100%);
+
+
+    }
+   .wrapper {
+ perspective: 500px;
+ transform: rotatex(10deg);
+ animation: rotateAngle 6s linear infinite;
+ margin: auto;
+ width: auto;
+}
+
+button {
+ display: block;
+ position: relative;
+ margin: 0.5em 0;
+ padding: 0.8em 2.2em;
+ cursor: pointer;
+ background: #FFFFFF;
+ border: none;
+ border-radius: 0.4em;
+ text-transform: uppercase;
+ font-size: 19px;
+ font-family: "Work Sans", sans-serif;
+ font-weight: 500;
+ letter-spacing: 0.04em;
+ mix-blend-mode: color-dodge;
+ perspective: 500px;
+ transform-style: preserve-3d;
+}
+
+button:before, button:after {
+ --z: 0px;
+ position: absolute;
+ top: 0;
+ left: 0;
+ display: block;
+ content: "";
+ width: 100%;
+ height: 100%;
+ opacity: 0;
+ mix-blend-mode: inherit;
+ border-radius: inherit;
+ transform-style: preserve-3d;
+ transform: translate3d(calc(var(--z) * 0px), calc(var(--z) * 0px), calc(var(--z) * 0px));
+}
+
+button span {
+ mix-blend-mode: none;
+ display: block;
+}
+
+button:after {
+ background-color: #5D00FF;
+}
+
+button:before {
+ background-color: #FF1731;
+}
+
+button:hover {
+ background-color: #FFF65B;
+ transition: background 0.3s 0.1s;
+}
+
+button:hover:before {
+ --z: 0.04;
+ animation: translateWobble 2.2s ease forwards;
+}
+
+button:hover:after {
+ --z: -0.06;
+ animation: translateWobble 2.2s ease forwards;
+}
+
+@keyframes rotateAngle {
+ 0% {
+  transform: rotateY(0deg) rotateX(10deg);
+  -webkit-animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+  animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+ }
+
+ 25% {
+  transform: rotateY(20deg) rotateX(10deg);
+ }
+
+ 50% {
+  transform: rotateY(0deg) rotateX(10deg);
+  -webkit-animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+  animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+ }
+
+ 75% {
+  transform: rotateY(-20deg) rotateX(10deg);
+ }
+
+ 100% {
+  transform: rotateY(0deg) rotateX(10deg);
+ }
+}
+
+@keyframes translateWobble {
+ 0% {
+  opacity: 0;
+  transform: translate3d(calc(var(--z) * 0px), calc(var(--z) * 0px), calc(var(--z) * 0px));
+ }
+
+ 16% {
+  transform: translate3d(calc(var(--z) * 160px), calc(var(--z) * 160px), calc(var(--z) * 160px));
+ }
+
+ 28% {
+  opacity: 1;
+  transform: translate3d(calc(var(--z) * 70px), calc(var(--z) * 70px), calc(var(--z) * 70px));
+ }
+
+ 44% {
+  transform: translate3d(calc(var(--z) * 130px), calc(var(--z) * 130px), calc(var(--z) * 130px));
+ }
+
+ 59% {
+  transform: translate3d(calc(var(--z) * 85px), calc(var(--z) * 85px), calc(var(--z) * 85px));
+ }
+
+ 73% {
+  transform: translate3d(calc(var(--z) * 110px), calc(var(--z) * 110px), calc(var(--z) * 110px));
+ }
+
+ 88% {
+  opacity: 1;
+  transform: translate3d(calc(var(--z) * 90px), calc(var(--z) * 90px), calc(var(--z) * 90px));
+ }
+
+ 100% {
+  opacity: 1;
+  transform: translate3d(calc(var(--z) * 100px), calc(var(--z) * 100px), calc(var(--z) * 100px));
+ }
+}
+
+</style>  
+  <div>
+        <div  class="wrapper">
+            <button id="playButton"  class="button">Play</button>
+        </div>
+    </div>
+    <div id="oscilloscope"></div>
+    <div id="spectrogram"></div>
+</head>
+
+<body>
+<!-- The Canvas tag sets up a screen in the browser that we can draw to. -->
+<canvas></canvas>
+
+<script type="text/javascript">
+    // This is where we are going to store the mouse information
+    let mouseX = 50;
+    let mouseY = 10;
+    // We really need this
+    const TWO_PI = Math.PI * 2;
+
+    // This gets a reference to the canvas in the browser
+
+    const canvas = document.querySelector("canvas");
+
+    // This sets the width and height to the document window
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // Be aware that when you resize the window, you will need to call (do) this again
+
+    // This creates a 2d drawing 'context' in your canvas
+    // All your drawing will be done in this canvas
+    const context = canvas.getContext("2d");
+
+    //This tells the browser to get the mouse information from the function we've called getMouse
+    canvas.addEventListener('mousemove', getMouse, false);
+
+    //here's our function 'getMouse'.
+    function getMouse(mousePosition) {
+        mouseX = mousePosition.layerX;
+        mouseY = mousePosition.layerY;
+    }
+
+    // This function translates the canvas so that we're looking at it from a different position, meaning that 0,0 is somewhere else
+    function draw() {
+
+        const segments = 80;
+        const spacing = TWO_PI / segments;
+        const radius = segments * 3.14;
+        //clear the screen
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        //draw circles
+
+        context.beginPath();
+
+        //mouseX mouseY 改变
+        // mouseX = mouseX * x
+        // mouseY = mouseY * x;
+        //绘制4个不同的
+
+        for (let c = 0; c < 4; c++) {
+            for (let i = 0; i < segments; i++) {
+                context.strokeStyle = "#0000FF"; //set the line colour to black
+                context.lineWidth = 2;
+                const x = Math.sin(spacing * i * (mouseX / 30)) * Math.cos(spacing * i * (mouseY / 30)) * radius;
+                const y = Math.sin(spacing * i * (mouseX / 30)) * Math.sin(spacing * i * (mouseY / 30)) * radius;
+
+                //设置不同的位置
+                if (c === 0 || c === 1) {
+                    context.lineTo(x + radius + c * 500 + 50, y + radius);
+                } else {
+                    context.lineTo(x + radius + (c - 2) * 500 + 50, y + radius + 500);
+                }
+
+                // for (let j = segments; j >= 0; j--) {
+                //     context.strokeStyle = "#002366"; //set the line colour to black
+                //     const x = Math.sin(spacing * i * (mouseX / 50)) * Math.cos(spacing * i * (mouseY / 50)) * radius;
+                //     const y = Math.sin(spacing * i * (mouseX / 50)) * Math.sin(spacing * i * (mouseY / 50)) * radius;
+                //
+                //     context.lineTo(x + radius, y + radius);
+                // }
+
+            }
+        }
+        context.stroke(); //draw the outline
+        context.closePath();
+        requestAnimationFrame(draw);
+    }
+
+    //request the first animation frame
+    requestAnimationFrame(draw);
+    //the end.
+</script>
+
+<script language="javascript" type="text/javascript">
+
+    // We need to have a play button these days. Boring I know.
+
+    const playButton = document.getElementById('playButton');
+
+    //create a maximilian object
+    var maxi = maximilian();
+
+    //create an audio engine
+    var maxiEngine = new maxi.maxiAudio();
+
+    //create a bunch of stuff
+    var two = new maxi.maxiSample();
+    var nine = new maxi.maxiSample();
+    var five = new maxi.maxiSample();
+    var zero = new maxi.maxiSample();
+    var osc1 = new maxi.maxiOsc();
+    var osc2 = new maxi.maxiOsc();
+    var myClock = new maxi.maxiClock();
+
+
+    var scratch=0;
+    var counter = 0;
+    myClock.setTempo(60);
+    myClock.setTicksPerBeat(3);
+    var oscilloscope,spectrogram;
+
+    //when the play button is pressed...
+    let playAudio = () => {
+        //arrange play button
+        playButton.style.display="none";
+        //start the audio engine
+        maxiEngine.init();
+        //the sample is from freesound https://freesound.org/people/schafferdavid/sounds/211471/
+        maxiEngine.loadSample("Analysis-Snare.m4a", two);
+        maxiEngine.loadSample("909a.wav", five);
+        maxiEngine.loadSample("hihat28.wav", nine);
+        maxiEngine.loadSample("01.wav", zero);
+
+        //show an oscilloscope and freqscope
+        Nexus.context = maxiEngine.context;
+        oscilloscope = new Nexus.Oscilloscope('oscilloscope', {'size': [400,100]}).connect(maxiEngine.maxiAudioProcessor);
+        spectrogram = new Nexus.Spectrogram('spectrogram', {'size': [400,100]}).connect(maxiEngine.maxiAudioProcessor);
+
+        maxiEngine.play = function() {
+
+            myClock.ticker();
+
+            if (myClock.tick) {
+
+                scratch=0;
+                counter++;
+            }
+
+
+            if (myClock.tick && counter%9===1) {
+                two.trigger();
+                zero.trigger();
+
+            }
+
+            if (myClock.tick && counter%16===0) {
+                nine.trigger();
+                five.trigger();
+
+            }
+
+            if (myClock.tick && counter%3===1) {
+                five.trigger();
+                zero.trigger();
+            }
+
+            var out = two.playOnce(4+osc1.sinewave(100)) + five.playOnce()*osc1.sinewave(osc2.sinewave(20)+10) + nine.playOnce(10) + zero.playOnce()*osc1.sinewave(osc2.sinewave(7)%2);
+            return out;
+
+        }
+    }
+
+    // This script listens to the play button
+    //playAudio();
+    playButton.addEventListener("click", () => playAudio());
+
+
+
+
+</script>
+</body>
+</html>
